@@ -92,17 +92,18 @@ Invoke-AzVMRunCommand -ResourceGroupName $resourceGroupName -VMName "WebVM2" -Co
 # Script to install MySQL and configure database on AppVMs
 $mysqlScript = @"
 sudo apt-get update
-echo 'mysql-server mysql-server/root_password password A987dministrator.' | sudo debconf-set-selections
-echo 'mysql-server mysql-server/root_password_again password A987dministrator.' | sudo debconf-set-selections
+echo 'mysql-server mysql-server/root_password password <adminpassword>' | sudo debconf-set-selections
+echo 'mysql-server mysql-server/root_password_again password <adminpassword>' | sudo debconf-set-selections
 sudo apt-get install -y mysql-server
-sudo mysql -u root -p'A987dministrator.' -e "CREATE DATABASE cloudsikkerhed;"
-sudo mysql -u root -p'A987dministrator.' -e "USE cloudsikkerhed; CREATE TABLE users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50), lastname VARCHAR(50), email VARCHAR(50));"
-sudo mysql -u root -p'A987dministrator.' -e "USE cloudsikkerhed; INSERT INTO users (name, lastname, email) VALUES ('Tahseen', 'Uddin', 'taud@kea.dk'), ('Charlie', 'Demasi', 'chad@kea.dk'), ('Malene', 'Hasse', 'malh@kea.dk'), ('Per', 'Fogt', 'pefo@kea.dk'), ('Javier', 'Volpe', 'javo0001@stud.kea.dk');"
+sudo mysql -u root -p'<adminpassword>' -e "CREATE DATABASE cloudsikkerhed;"
+sudo mysql -u root -p'<adminpassword>' -e "USE cloudsikkerhed; CREATE TABLE users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50), lastname VARCHAR(50), email VARCHAR(50));"
+sudo mysql -u root -p'<adminpassword>' -e "USE cloudsikkerhed; INSERT INTO users (name, lastname, email) VALUES ('John', 'Doe', 'john.doe@example.com'), ('Alice', 'Smith', 'alice.smith@example.com'), ('Bob', 'Johnson', 'bob.johnson@example.com'), ('Eve', 'Davis', 'eve.davis@example.com'), ('Michael', 'Brown', 'michael.brown@example.com');"
+
 sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf
 sudo systemctl restart mysql
-sudo mysql -u root -p'A987dministrator.' -e "CREATE USER 'javier'@'%' IDENTIFIED BY 'A987dministrator.';"
-sudo mysql -u root -p'A987dministrator.' -e "GRANT ALL PRIVILEGES ON *.* TO 'javier'@'%' WITH GRANT OPTION;"
-sudo mysql -u root -p'A987dministrator.' -e "FLUSH PRIVILEGES;"
+sudo mysql -u root -p'<adminpassword>' -e "CREATE USER 'javier'@'%' IDENTIFIED BY '<adminpassword>';"
+sudo mysql -u root -p'<adminpassword>' -e "GRANT ALL PRIVILEGES ON *.* TO 'javier'@'%' WITH GRANT OPTION;"
+sudo mysql -u root -p'<adminpassword>' -e "FLUSH PRIVILEGES;"
 "@
 
 Invoke-AzVMRunCommand -ResourceGroupName $resourceGroupName -VMName "AppVM1" -CommandId "RunShellScript" -ScriptString $mysqlScript
@@ -132,3 +133,5 @@ $nicApp2.IpConfigurations[0].LoadBalancerBackendAddressPools = @($backendPoolApp
 # Apply the changes
 $nicApp1 | Set-AzNetworkInterface
 $nicApp2 | Set-AzNetworkInterface
+
+
