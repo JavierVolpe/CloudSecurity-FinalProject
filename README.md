@@ -1,120 +1,89 @@
-Azure Three-Tier Load Balancing Infrastructure Deployment Script
-================================================================
-*This script was developed as part of the "Cloud Security" course final project.*
+# Azure Three-Tier Load Balancing Infrastructure
 
-This repository contains a PowerShell script that automates the deployment of a secure, three-tier infrastructure on Microsoft Azure. The infrastructure includes:
+This repository contains a PowerShell script that automates the creation of a **secure three-tier architecture** in Microsoft Azure. It was developed as a final project for the *Cloud Security* course.
 
--   **Three Subnets**: Web, App, and Data tiers.
--   **External Load Balancer**: Distributes incoming web traffic to two web servers.
--   **Internal Load Balancer**: Distributes traffic to two application servers.
--   **Virtual Machines**: Four Linux VMs (2 for Web tier, 2 for App tier).
--   **Network Security Groups (NSGs)**: Controls inbound and outbound traffic.
--   **Automated Configuration**: Installs and configures Apache2, PHP, and MySQL on the respective VMs.
+---
 
-Table of Contents
------------------
+## 🏗️ Overview
 
--   [Architecture Overview](#architecture-overview)
--   [Prerequisites](#prerequisites)
--   [Deployment Instructions](#deployment-instructions)
--   [Security Features](#security-features)
--   [Cleanup](#cleanup)
--   [Notes](#notes)
--   [License](#license)
+The deployment includes:
+- 🕸️ **Web Tier**: 2 Ubuntu VMs behind an **external load balancer**
+- 🧠 **App Tier**: 2 Ubuntu VMs with MySQL databases behind an **internal load balancer**
+- 🗃️ **Data Tier**: MySQL database service co-hosted on app-tier VMs
+- 🔐 **Network Security Groups (NSGs)** for tiered isolation and access control
+- ⚙️ **Automation**: Configures Apache2, PHP, and MySQL on respective tiers
 
-Architecture Overview
----------------------
+---
 
-The script sets up the following components:
+## 🛡️ Security Features
 
--   **Web Tier**: Two Ubuntu VMs (`WebVM1`, `WebVM2`) behind an **External Load Balancer**.
--   **App Tier**: Two Ubuntu VMs (`AppVM1`, `AppVM2`) behind an **Internal Load Balancer**.
--   **Data Tier**: MySQL databases running on the App VMs.
--   **Network Security Groups**: Applied to control traffic between subnets and to the internet.
+- NSGs to restrict access:
+  - Only port 80 open to the public (Web Tier)
+  - Only port 3306 open internally between Web and App tiers
+- App and Data tiers are **fully private**
+- No public IPs assigned to VMs
+- Use of strong admin credentials
+- Follows **least privilege** principles
 
-Prerequisites
--------------
+---
 
--   **Azure Subscription**: Active subscription to deploy resources.
+## 📦 Prerequisites
 
--   **Azure PowerShell Module**: Installed and configured. You can install it using:
+- Active Azure subscription
+- Azure PowerShell module:
+  ```powershell
+  Install-Module -Name Az -AllowClobber -Scope CurrentUser
+  ```
+- Required permissions to deploy Azure resources
 
-    powershell
+---
 
-    Copy code
+## 🚀 Deployment Instructions
 
-    `Install-Module -Name Az -AllowClobber -Scope CurrentUser`
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/JavierVolpe/CloudSecurity-FinalProject
+   cd CloudSecurity-FinalProject
+   ```
 
--   **Permissions**: Ensure you have the necessary permissions to create resources in the Azure subscription.
+2. Log in to Azure:
+   ```powershell
+   Connect-AzAccount
+   ```
 
-Deployment Instructions
------------------------
+3. Run the script:
+   ```powershell
+   .\cloud_sikkerhed_project.ps1
+   ```
 
-1.  **Clone the Repository**:
+4. If needed, allow scripts to execute:
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
 
-    bash
+---
 
-    Copy code
+## 🧹 Cleanup
 
-    `git clone https://github.com/JavierVolpe/CloudSecurity-FinalProject/blob/main/.git
-    cd azure-three-tier-infrastructure`
+To delete the entire setup:
+```powershell
+Remove-AzResourceGroup -Name "MyResourceGroup" -Force
+```
 
-2.  **Login to Azure**:
+---
 
-    Open PowerShell and run:
+## 📌 Notes
 
-    powershell
+- The **App VMs initially launch in the Web subnet** to download packages.
+- After setup, they're **moved to the private App subnet** with no internet access.
+- Consider using:
+  - **Azure Bastion** for secure admin access
+  - **Azure Key Vault** for storing secrets
+  - **Resource Locks** for deletion protection
 
-    Copy code
+---
 
-    `Connect-AzAccount`
+## 👨‍💻 Author
 
-3.  **Run the Deployment Script**:
+This solution was developed by **Javier Alejandro Volpe** as part of the *Cloud Security* final project (KEA IT Technology, 3rd semester).
 
-    Execute the script to deploy the infrastructure:
-
-    powershell
-
-    Copy code
-
-    `.\cloud_sikkerhed_project.ps1`
-
-    > **Note**: You may need to adjust execution policies to run the script:
-
-    powershell
-
-    Copy code
-
-    `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
-
-4.  **Monitor the Deployment**:
-
-    The script will output the progress. Deployment may take several minutes.
-
-Security Features
------------------
-
--   **Network Security Groups (NSGs)**: Configured to allow only necessary traffic.
-    -   Allows HTTP traffic on port 80 to the Web tier.
-    -   Allows MySQL traffic on port 3306 between Web and App tiers.
--   **Least Privilege Principle**: Access controls are set to minimize exposure.
--   **Private Subnets**: App and Data tiers are isolated in private subnets.
--   **No Public IPs on VMs**: VMs do not have public IP addresses to reduce attack surface.
--   **Strong Passwords**: Uses complex passwords for administrative accounts.
-
-Cleanup
--------
-
-To avoid incurring charges, remove the resource group and all associated resources:
-
-
-`Remove-AzResourceGroup -Name "MyResourceGroup" -Force`
-
-Notes
------
-
--   **Data Tier**: In this script, the data tier is implemented using MySQL on the App VMs. For production scenarios, consider using Azure SQL Database with failover groups for high availability.
--   **Additional Security Services**: While this script includes NSGs, you can enhance security by adding:
-    -   **Azure Key Vault**: For managing secrets and keys.
-    -   **Azure Bastion**: For secure remote management.
-    -   **Resource Locks**: To prevent accidental deletion of critical resources.
